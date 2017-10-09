@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Mushroomer</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+    <string name="edible">Съедобные</string>
+    <string name="conditionally_edible">Условно-съедобные</string>
+    <string name="inedible">Несъедобные</string>
+
+</resources>

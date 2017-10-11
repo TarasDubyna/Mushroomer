@@ -1,8 +1,12 @@
 package taras.mushroomer.Model;
 
 import android.graphics.Bitmap;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class Mushroom {
+import java.io.Serializable;
+
+public class Mushroom{
     private int id;
     private String name;
     private String type;
@@ -53,4 +57,5 @@ public class Mushroom {
     public void setImageDir(String imageDir) {
         this.imageDir = imageDir;
     }
+
 }

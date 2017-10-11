@@ -1,11 +1,9 @@
 package taras.mushroomer;
 
-import android.support.design.widget.TabLayout;
+import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 
 import android.support.v4.app.Fragment;
@@ -19,15 +17,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import taras.mushroomer.Adapter.RecyclerAdapter;
 import taras.mushroomer.DB.DatabaseHelper;
 import taras.mushroomer.Model.Mushroom;
 
-public class MainActivity extends AppCompatActivity {
+public class InfoMushroomActivity extends AppCompatActivity {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -43,17 +41,20 @@ public class MainActivity extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-
-    private RecyclerView mRecyclerView;
-    private RecyclerView.LayoutManager mLayoutManager;
-    private RecyclerAdapter mAdapter;
-
-
+    private static ArrayList<Mushroom> mMushroomList;
+    private int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_info_mushroom);
+
+        String typeMushroom = getIntent().getStringExtra("MushroomType");
+        position = getIntent().getIntExtra("MushroomPosition", 0);
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        mMushroomList = databaseHelper.getAllMushroomsByType(typeMushroom);
+
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -65,33 +66,12 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-
+        mViewPager.setCurrentItem(position);
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     /**
      * A placeholder fragment containing a simple view.
@@ -113,29 +93,22 @@ public class MainActivity extends AppCompatActivity {
         public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber - 1);
+            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
             return fragment;
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            RecyclerView recyclerView = rootView.findViewById(R.id.recycle_view_main);
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
-            recyclerView.setLayoutManager(layoutManager);
-
-            DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
-            int num = getArguments().getInt(ARG_SECTION_NUMBER);
-            RecyclerAdapter mAdapter = new RecyclerAdapter(databaseHelper.getAllMushroomsByType(getTypeBySection(num))); // заполнение адаптера списокм
-            recyclerView.setAdapter(mAdapter);
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.fragment_info_mushroom, container, false);
+            ImageView imageView = rootView.findViewById(R.id.info_card_image);
+            TextView nameTextView = rootView.findViewById(R.id.info_card_name);
+            int position = getArguments().getInt(ARG_SECTION_NUMBER) - 1;
+            imageView.setImageBitmap(mMushroomList.get(position).getImage());
+            nameTextView.setText(mMushroomList.get(position).getName());
 
             return rootView;
-        }
-
-        private String getTypeBySection(int section){
-            String[] typeNames = {"Съедобные", "Условно-съедобные", "Несъедобные"};
-            return typeNames[section];
         }
     }
 
@@ -149,8 +122,6 @@ public class MainActivity extends AppCompatActivity {
             super(fm);
         }
 
-
-
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
@@ -161,23 +132,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Show 3 total pages.
-            return 3;
+            return mMushroomList.size();
         }
 
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getResources().getString(R.string.edible);
-                case 1:
-                    return getResources().getString(R.string.conditionally_edible);
-                case 2:
-                    return getResources().getString(R.string.inedible);
-            }
-            return null;
-        }
     }
-
-
-
 }

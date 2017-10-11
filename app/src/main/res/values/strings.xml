@@ -7,4 +7,7 @@
     <string name="conditionally_edible">Условно-съедобные</string>
     <string name="inedible">Несъедобные</string>
 
+    <string name="title_activity_info_mushroom">InfoMushroomActivity</string>
+    <string name="title_activity_mushroom_lists">MushroomListsActivity</string>
+
 </resources>

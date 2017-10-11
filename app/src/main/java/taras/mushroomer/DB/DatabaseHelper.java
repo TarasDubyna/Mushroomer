@@ -12,8 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Environment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -83,15 +81,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private void createStartData(SQLiteDatabase db){
         ArrayList<Mushroom> mushrooms = new ArrayList<Mushroom>(){{
-            add(new Mushroom("Польский гриб", "Съедобные", null, saveToInternalStorage(getBitmapImageFromResource(R.drawable.polsky), "Польский гриб")));
-            add(new Mushroom("Дождевик съедобный", "Съедобные", null, saveToInternalStorage(getBitmapImageFromResource(R.drawable.dojdevik), "Дождевик съедобный")));
+            add(new Mushroom("Польский гриб", "Съедобные", getBitmapImageFromResource(R.drawable.polsky), String.valueOf(R.drawable.polsky)));
+            add(new Mushroom("Дождевик съедобный", "Съедобные", getBitmapImageFromResource(R.drawable.dojdevik), String.valueOf(R.drawable.dojdevik)));
 
-            add(new Mushroom("Рядовка зелёная", "Условно-съедобные", null, saveToInternalStorage(getBitmapImageFromResource(R.drawable.tricholoma_equestre), "Рядовка зелёная")));
-            add(new Mushroom("Груздь настоящий", "Условно-съедобные",null, saveToInternalStorage(getBitmapImageFromResource(R.drawable.lactarius_resimus), "Груздь настоящий")));
+            add(new Mushroom("Рядовка зелёная", "Условно-съедобные", getBitmapImageFromResource(R.drawable.tricholoma_equestre), String.valueOf(R.drawable.tricholoma_equestre)));
+            add(new Mushroom("Груздь настоящий", "Условно-съедобные",getBitmapImageFromResource(R.drawable.lactarius_resimus), String.valueOf(R.drawable.lactarius_resimus)));
 
-            add(new Mushroom("Мухомор красный", "Несъедобные", null, saveToInternalStorage(getBitmapImageFromResource(R.drawable.amanita_muscaria), "Мухомор красный")));
-            add(new Mushroom("Бледная поганка", "Несъедобные", null, saveToInternalStorage(getBitmapImageFromResource(R.drawable.amanita_phalloides), "Бледная поганка")));
+            add(new Mushroom("Мухомор красный", "Несъедобные", getBitmapImageFromResource(R.drawable.amanita_muscaria), String.valueOf(R.drawable.amanita_muscaria)));
+            add(new Mushroom("Бледная поганка", "Несъедобные", getBitmapImageFromResource(R.drawable.amanita_phalloides), String.valueOf(R.drawable.amanita_phalloides)));
         }};
+
         for (Mushroom mushroom: mushrooms){
             ContentValues cv = new ContentValues();
             cv.put(COL_MUSHROOM_NAME, mushroom.getName());
@@ -172,6 +171,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 mushroom.setName(res.getString(1));
                 mushroom.setType(res.getString(2));
                 mushroom.setImageDir(res.getString(3));
+                try {
+                    mushroom.setImage(getBitmapImageFromResource(Integer.parseInt(mushroom.getImageDir())));
+                } catch (Exception e){
+
+                }
+
+
                 mushroom.setImage(loadImageFromStorage(mushroom.getImageDir(), mushroom.getName()));
                 //mushroom.setPhoto(getImage(res.getBlob(3)));
                 mushroomsList.add(mushroom);

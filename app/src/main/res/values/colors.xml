@@ -8,4 +8,14 @@
     <color name="yellow">#FFFFEC40</color>
     <color name="red">#FFFF4043</color>
 
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="brown">#FF845800</color>
+    <color name="brown_dark">#543901</color>
+    <color name="brown_light">#FFDFA126</color>
+    <color name="brown_light_2">#B4DFA126</color>
+    <color name="green_dark">#078600</color>
+    <color name="orange">#FF9000</color>
+    <color name="red_dark">#A30008</color>
+
 </resources>

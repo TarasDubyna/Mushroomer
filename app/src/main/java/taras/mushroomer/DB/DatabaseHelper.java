@@ -174,12 +174,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 try {
                     mushroom.setImage(getBitmapImageFromResource(Integer.parseInt(mushroom.getImageDir())));
                 } catch (Exception e){
-
+                    mushroom.setImage(loadImageFromStorage(mushroom.getImageDir(), mushroom.getName()));
                 }
-
-
-                mushroom.setImage(loadImageFromStorage(mushroom.getImageDir(), mushroom.getName()));
-                //mushroom.setPhoto(getImage(res.getBlob(3)));
                 mushroomsList.add(mushroom);
                 res.moveToNext();
             }

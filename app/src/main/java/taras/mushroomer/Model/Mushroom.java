@@ -9,6 +9,8 @@ import java.io.Serializable;
 public class Mushroom{
     private int id;
     private String name;
+    private String nameLat;
+    private int description;
     private String type;
     private Bitmap image;
     private String imageDir;
@@ -21,6 +23,21 @@ public class Mushroom{
         this.type = type;
         this.image = image;
         this.imageDir = imageDir;
+    }
+
+
+    public String getNameLat() {
+        return nameLat;
+    }
+    public void setNameLat(String nameLat) {
+        this.nameLat = nameLat;
+    }
+
+    public int getDescription() {
+        return description;
+    }
+    public void setDescription(int description) {
+        this.description = description;
     }
 
     public Bitmap getImage() {

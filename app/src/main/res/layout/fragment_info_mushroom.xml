@@ -6,26 +6,65 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="taras.mushroomer.InfoMushroomActivity$PlaceholderFragment"
-    >
+    android:background="@color/brown_light_2"
+    tools:context="taras.mushroomer.InfoMushroomActivity$PlaceholderFragment">
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/cardview_shadow_end_color">
-        <ImageView
-            android:id="@+id/info_card_image"
-            android:layout_gravity="center_horizontal"
-            android:scaleType="centerCrop"
-            android:layout_margin="5dp"
+        android:background="@color/brown"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true">
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:background="@drawable/amanita_muscaria"/>
-        <TextView
-            android:id="@+id/info_card_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello World" />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/info_card_image"
+                android:layout_gravity="center_horizontal"
+                android:scaleType="centerCrop"
+                android:layout_width="wrap_content"
+                android:layout_height="300dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="5dp"
+                android:background="@color/brown"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/info_card_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:paddingBottom="3dp"
+                    android:paddingTop="3dp"
+                    android:text="TextView"
+                    android:textColor="@color/white"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:text="лат. Amanita muscaria"
+                    android:textColor="@color/white" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginLeft="5dp"
+                    android:gravity="center_horizontal"
+                    android:text="Когда я загорелся желанием изучить программирование под Android, то через поисковый запрос Google попытался получить список русскоязычных сайтов, где имелись руководства для Android. В принципе, документация на английском меня не пугает, но хотелось быстрее вникнуть в особенности программирования. Но обилие новых терминов и понятий на первых порах могли затруднить такое понимание, читая документацию в оригинале. Я честно открыл около двадцати различных ссылок и результат меня разочаровал. Практически везде в качестве руководства предлагалось только две статьи: установка необходимого программного обеспечения и перевод статьи Hello, World с официального сайта developer.android.com. Такое впечатление, что все дружно скопипастили из одного источника, добавили несколько статей из Хабра и все. Буду рад, если кто-то подскажет мне хороший ресурс для совсем начинающих — в идеале статьи должны быть написаны для людей, которые были вообще не знакомы с программированием до знакомства с Android.
+Переходим к кнопке. После написания традиционного Hello, World, который выводился в TextView сразу после загрузки приложения, захотелось попробовать что-то более функциональное. Разобравшись с основными принципами размещения элементов в xml-файле, решил переписать Hello, World на более привычный манер. Добавил на форму текстовое поле EditText и кнопку Button, и стал искать в документации способ обработки щелчка. В документации (а также в статьях на Хабре) использовалась такая длинная конструкция:"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
+
+        </LinearLayout>
+
     </android.support.v7.widget.CardView>
 
 </RelativeLayout>

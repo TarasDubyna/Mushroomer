@@ -42,19 +42,17 @@ public class InfoMushroomActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
     private static ArrayList<Mushroom> mMushroomList;
-    private int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_info_mushroom);
 
-        String typeMushroom = getIntent().getStringExtra("MushroomType");
-        position = getIntent().getIntExtra("MushroomPosition", 0);
+        String nameMushroom = getIntent().getStringExtra("mushroomName");
+        String typeMushroom = getIntent().getStringExtra("mushroomType");
+
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
         mMushroomList = databaseHelper.getAllMushroomsByType(typeMushroom);
-
-
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -65,8 +63,17 @@ public class InfoMushroomActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setCurrentItem(getItemPosition(nameMushroom));
+    }
 
-        mViewPager.setCurrentItem(position);
+    private int getItemPosition(String mushroomName){
+        int i = 0;
+        for (i = 0; i < mMushroomList.size(); i++){
+            if (mMushroomList.get(i).getName().equals(mushroomName)){
+                return i;
+            }
+        }
+        return 0;
     }
 
 
@@ -77,19 +84,10 @@ public class InfoMushroomActivity extends AppCompatActivity {
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
         private static final String ARG_SECTION_NUMBER = "section_number";
 
         public PlaceholderFragment() {
         }
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
         public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
@@ -107,7 +105,6 @@ public class InfoMushroomActivity extends AppCompatActivity {
             int position = getArguments().getInt(ARG_SECTION_NUMBER) - 1;
             imageView.setImageBitmap(mMushroomList.get(position).getImage());
             nameTextView.setText(mMushroomList.get(position).getName());
-
             return rootView;
         }
     }
@@ -134,6 +131,8 @@ public class InfoMushroomActivity extends AppCompatActivity {
             // Show 3 total pages.
             return mMushroomList.size();
         }
+
+
 
     }
 }

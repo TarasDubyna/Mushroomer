@@ -1,4 +1,4 @@
-package taras.mushroomer;
+package taras.mushroomer.Fragment;
 
 
 import android.os.Bundle;
@@ -17,6 +17,7 @@ import java.util.Arrays;
 import taras.mushroomer.Adapter.RecyclerAdapter;
 import taras.mushroomer.DB.DatabaseHelper;
 import taras.mushroomer.Model.Mushroom;
+import taras.mushroomer.R;
 
 public class MushroomListFragment extends Fragment {
 
@@ -55,7 +56,6 @@ public class MushroomListFragment extends Fragment {
         // Get arguments
         parseArguments();
         view = inflater.inflate(R.layout.fragment_main, container, false);
-        //view.setBackgroundColor(getResources().getColor(getColor(ty)));
         return view;
     }
 

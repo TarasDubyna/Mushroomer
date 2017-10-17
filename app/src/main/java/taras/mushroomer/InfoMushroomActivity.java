@@ -1,5 +1,6 @@
 package taras.mushroomer;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -27,19 +28,8 @@ import taras.mushroomer.Model.Mushroom;
 
 public class InfoMushroomActivity extends AppCompatActivity {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
     private static ArrayList<Mushroom> mMushroomList;
 
@@ -52,15 +42,13 @@ public class InfoMushroomActivity extends AppCompatActivity {
         String typeMushroom = getIntent().getStringExtra("mushroomType");
 
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        mMushroomList = databaseHelper.getAllMushroomsByType(typeMushroom);
+        mMushroomList = databaseHelper.getAllMushroomsInfoByType(typeMushroom);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
+
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(getItemPosition(nameMushroom));
@@ -76,19 +64,16 @@ public class InfoMushroomActivity extends AppCompatActivity {
         return 0;
     }
 
-
-
-
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
     public static class PlaceholderFragment extends Fragment {
+
         private static final String ARG_SECTION_NUMBER = "section_number";
+        private static Context mContext;
+
 
         public PlaceholderFragment() {
         }
-        public static PlaceholderFragment newInstance(int sectionNumber) {
+        public static PlaceholderFragment newInstance(int sectionNumber, Context context) {
+            mContext = context;
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
@@ -97,14 +82,20 @@ public class InfoMushroomActivity extends AppCompatActivity {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_info_mushroom, container, false);
+
             ImageView imageView = rootView.findViewById(R.id.info_card_image);
             TextView nameTextView = rootView.findViewById(R.id.info_card_name);
+            TextView nameLatTextView = rootView.findViewById(R.id.info_card_name_lat);
+            TextView descriptionTextView = rootView.findViewById(R.id.info_card_description);
+
             int position = getArguments().getInt(ARG_SECTION_NUMBER) - 1;
-            imageView.setImageBitmap(mMushroomList.get(position).getImage());
+            imageView.setImageDrawable(mContext.getDrawable(mMushroomList.get(position).getImageDir()));
             nameTextView.setText(mMushroomList.get(position).getName());
+            nameLatTextView.setText("лат. " + mMushroomList.get(position).getNameLat());
+            descriptionTextView.setText(mMushroomList.get(position).getDescription());
+
             return rootView;
         }
     }
@@ -123,7 +114,7 @@ public class InfoMushroomActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            return PlaceholderFragment.newInstance(position + 1, getApplicationContext());
         }
 
         @Override

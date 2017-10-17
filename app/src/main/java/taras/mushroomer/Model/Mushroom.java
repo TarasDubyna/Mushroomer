@@ -10,21 +10,36 @@ public class Mushroom{
     private int id;
     private String name;
     private String nameLat;
-    private int description;
+
+    private String description;
+    private int descriptionDir;
+
     private String type;
-    private Bitmap image;
-    private String imageDir;
+    private int imageDir;
 
     public Mushroom() {
     }
 
-    public Mushroom(String name, String type, Bitmap image, String imageDir) {
+    public Mushroom(String name, String type, int imageDir) {
         this.name = name;
         this.type = type;
-        this.image = image;
         this.imageDir = imageDir;
     }
 
+    public Mushroom(String name, String nameLat, String type, int descriptionDir, int imageDir) {
+        this.name = name;
+        this.nameLat = nameLat;
+        this.descriptionDir = descriptionDir;
+        this.type = type;
+        this.imageDir = imageDir;
+    }
+
+    public int getDescriptionDir() {
+        return descriptionDir;
+    }
+    public void setDescriptionDir(int descriptionDir) {
+        this.descriptionDir = descriptionDir;
+    }
 
     public String getNameLat() {
         return nameLat;
@@ -33,18 +48,11 @@ public class Mushroom{
         this.nameLat = nameLat;
     }
 
-    public int getDescription() {
+    public String getDescription() {
         return description;
     }
-    public void setDescription(int description) {
+    public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Bitmap getImage() {
-        return image;
-    }
-    public void setImage(Bitmap image) {
-        this.image = image;
     }
 
     public int getId() {
@@ -68,10 +76,10 @@ public class Mushroom{
         this.type = type;
     }
 
-    public String getImageDir() {
+    public int getImageDir() {
         return imageDir;
     }
-    public void setImageDir(String imageDir) {
+    public void setImageDir(int imageDir) {
         this.imageDir = imageDir;
     }
 

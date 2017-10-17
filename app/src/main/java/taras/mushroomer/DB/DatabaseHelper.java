@@ -4,7 +4,6 @@ package taras.mushroomer.DB;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -12,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,6 +32,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String COL_MUSHROOM_ID = "mushroom_id";
     private static final String COL_MUSHROOM_NAME = "mushroom_name";
+    private static final String COL_MUSHROOM_LAT_NAME = "mushroom_lat_name";
+    private static final String COL_MUSHROOM_DESCRIPTION_DIR = "mushroom_description_dir";
     private static final String COL_MUSHROOM_TYPE = "mushroom_type";
     private static final String COL_MUSHROOM_PHOTO_DIR = "mushroom_photo_dir";
 
@@ -81,32 +83,41 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private void createStartData(SQLiteDatabase db){
         ArrayList<Mushroom> mushrooms = new ArrayList<Mushroom>(){{
-            add(new Mushroom("Польский гриб", "Съедобные", getBitmapImageFromResource(R.drawable.polsky), String.valueOf(R.drawable.polsky)));
-            add(new Mushroom("Дождевик съедобный", "Съедобные", getBitmapImageFromResource(R.drawable.dojdevik), String.valueOf(R.drawable.dojdevik)));
 
-            add(new Mushroom("Рядовка зелёная", "Условно-съедобные", getBitmapImageFromResource(R.drawable.tricholoma_equestre), String.valueOf(R.drawable.tricholoma_equestre)));
-            add(new Mushroom("Груздь настоящий", "Условно-съедобные",getBitmapImageFromResource(R.drawable.lactarius_resimus), String.valueOf(R.drawable.lactarius_resimus)));
+            add(new Mushroom("Польский гриб", "Tricholoma equestre", "Съедобные", R.string.polsky_grib, R.drawable.polsky_grib));
+            add(new Mushroom("Дождевик съедобный", "Lactarius resimus", "Съедобные" ,R.string.dojdevik_syedobni, R.drawable.dojdevik_syedobni));
 
-            add(new Mushroom("Мухомор красный", "Несъедобные", getBitmapImageFromResource(R.drawable.amanita_muscaria), String.valueOf(R.drawable.amanita_muscaria)));
-            add(new Mushroom("Бледная поганка", "Несъедобные", getBitmapImageFromResource(R.drawable.amanita_phalloides), String.valueOf(R.drawable.amanita_phalloides)));
+            add(new Mushroom("Рядовка зелёная", "Tricholoma equestre", "Условно-съедобные", R.string.ryadovka_zelenya, R.drawable.ryadovka_zelenya));
+            add(new Mushroom("Груздь настоящий", "Lactarius resimus", "Условно-съедобные" ,R.string.gruzd_nastoyashy, R.drawable.gruzd_nastoyashy));
+
+            add(new Mushroom("Бледная поганка", "Amanita phalloides", "Несъедобные", R.string.poganka_blednaya, R.drawable.poganka_blednya));
+            add(new Mushroom("Мухомор красный", "Amanita muscaria", "Несъедобные" ,R.string.muhomor_red, R.drawable.muhomor_red));
+
         }};
 
         for (Mushroom mushroom: mushrooms){
             ContentValues cv = new ContentValues();
             cv.put(COL_MUSHROOM_NAME, mushroom.getName());
+            cv.put(COL_MUSHROOM_LAT_NAME, mushroom.getNameLat());
             cv.put(COL_MUSHROOM_TYPE, mushroom.getType());
+            cv.put(COL_MUSHROOM_DESCRIPTION_DIR, mushroom.getDescriptionDir());
             cv.put(COL_MUSHROOM_PHOTO_DIR, mushroom.getImageDir());
             result = db.insertWithOnConflict(TABLE_MUSHROOM, null, cv, SQLiteDatabase.CONFLICT_IGNORE);
             cv.clear();
         }
     }
 
+    /*
     private Bitmap getBitmapImageFromResource(int resource){
         Drawable drawable = context.getResources().getDrawable(resource);
-        return ((BitmapDrawable) drawable).getBitmap();
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resource);
+
+    }*/
+
+    private String getDescriptionFromResource(int resource){
+        String text = context.getResources().getString(resource);
+        return text;
     }
-
-
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, 2);
@@ -117,10 +128,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("create table " + TABLE_MUSHROOM + " ("
-                + COL_MUSHROOM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + COL_MUSHROOM_NAME + " TEXT, "
-                + COL_MUSHROOM_TYPE + " TEXT, "
-                + COL_MUSHROOM_PHOTO_DIR + " TEXT);");
+                + COL_MUSHROOM_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " //0
+                + COL_MUSHROOM_NAME + " TEXT, " //1
+                + COL_MUSHROOM_LAT_NAME + " TEXT, " //2
+                + COL_MUSHROOM_TYPE + " TEXT, "// 3
+                + COL_MUSHROOM_DESCRIPTION_DIR + " INTEGER, "//4
+                + COL_MUSHROOM_PHOTO_DIR + " INTEGER);");// 5
 
         createStartData(db);
     }
@@ -131,6 +144,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    /*
     public boolean addMushroom(Mushroom mushroom){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -142,7 +156,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.clear();
         if (result == -1) return false;
         else return true;
-    }
+    }*/
 
     public boolean addListMushrooms(ArrayList<Mushroom> mushrooms){
         SQLiteDatabase db = this.getWritableDatabase();
@@ -158,46 +172,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         else return true;
     }
 
-    public ArrayList<Mushroom> getAllMushroomsByType(String type){
+    public ArrayList<Mushroom> getAllMushroomsInfoByType(String type){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor res = db.rawQuery("select * from " + TABLE_MUSHROOM + " where "
                 + COL_MUSHROOM_TYPE + " =?;", new String[] {type});
         ArrayList<Mushroom> mushroomsList = new ArrayList<>();
-
         if (res.moveToFirst()){
             while (!res.isAfterLast()){
                 Mushroom mushroom = new Mushroom();
                 mushroom.setId(res.getInt(0));
                 mushroom.setName(res.getString(1));
-                mushroom.setType(res.getString(2));
-                mushroom.setImageDir(res.getString(3));
-                try {
-                    mushroom.setImage(getBitmapImageFromResource(Integer.parseInt(mushroom.getImageDir())));
-                } catch (Exception e){
-                    mushroom.setImage(loadImageFromStorage(mushroom.getImageDir(), mushroom.getName()));
-                }
+                mushroom.setNameLat(res.getString(2));
+                mushroom.setType(res.getString(3));
+                mushroom.setDescription(getDescriptionFromResource(res.getInt(4)));
+                mushroom.setImageDir(res.getInt(5));
                 mushroomsList.add(mushroom);
                 res.moveToNext();
             }
         }
+        return mushroomsList;
+    }
 
-
-        /*
-        if (res.getCount() == 0){
-            System.out.println("Currency table is empty");
-        } else {
-            res.moveToPrevious();
-            if (res.moveToFirst()){
-                do{
-                    Mushroom mushroom = new Mushroom();
-                    mushroom.setId(res.getInt(0));
-                    mushroom.setName(res.getString(1));
-                    mushroom.setType(res.getString(2));
-                    mushroom.setPhoto(getImage(res.getBlob(3)));
-                    mushroomsList.add(mushroom);
-                } while (res.moveToNext());
+    public ArrayList<Mushroom> getAllMushroomsByType(String type){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor res = db.rawQuery("select * from " + TABLE_MUSHROOM + " where "
+                + COL_MUSHROOM_TYPE + " =?;", new String[] {type});
+        ArrayList<Mushroom> mushroomsList = new ArrayList<>();
+        if (res.moveToFirst()){
+            while (!res.isAfterLast()){
+                Mushroom mushroom = new Mushroom();
+                mushroom.setId(res.getInt(0));
+                mushroom.setName(res.getString(1));
+                mushroom.setType(res.getString(3));
+                mushroom.setImageDir(res.getInt(5));
+                mushroomsList.add(mushroom);
+                res.moveToNext();
             }
-        }*/
+        }
         return mushroomsList;
     }
 

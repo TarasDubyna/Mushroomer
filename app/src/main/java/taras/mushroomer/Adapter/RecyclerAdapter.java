@@ -23,14 +23,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.CardVi
     private Context mContext;
     private int position;
 
-    /*
-    @Override
-    public void onClick(View view) {
-        Intent intent = new Intent(view.getContext(), InfoMushroomActivity.class);
-        intent.putExtra("mushroomType", mMushroomList.get(0).getType());
-        intent.putExtra("mushroomPosition", position);
-        view.getContext().startActivity(intent);
-    }*/
 
     public static class CardViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public ImageView mImageView;
@@ -71,7 +63,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.CardVi
 
     @Override
     public void onBindViewHolder(CardViewHolder holder, int position) {
-        holder.mImageView.setImageBitmap(mMushroomList.get(position).getImage());
+        holder.mImageView.setImageDrawable(mContext.getDrawable(mMushroomList.get(position).getImageDir()));
         holder.mTextView.setText(mMushroomList.get(position).getName());
         this.position = position;
     }

@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -21,6 +22,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -46,9 +49,21 @@ public class MapTrackerFragment extends AppCompatActivity implements OnMapReadyC
     private boolean recordLocation = true;
     private ArrayList<LatLng> locationsList;
 
-
-
-
+    public final static String BROADCAST_ACTION = "ServiceGpsData";
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.hasExtra("ServiceGpsLongitudeList") && intent.hasExtra("ServiceGpsLatitudeList")){
+                ArrayList<Double> longitudeList = (ArrayList<Double>) intent.getSerializableExtra("ServiceGpsLongitudeList");
+                ArrayList<Double> latitudeList = (ArrayList<Double>) intent.getSerializableExtra("ServiceGpsLatitudeList");
+                addPoint(latitudeList, longitudeList);
+            } else {
+                double latitude = intent.getDoubleExtra("ServiceGpsLatitude", 0);
+                double longitude = intent.getDoubleExtra("ServiceGpsLongitude", 0);
+                addPoint(latitude, longitude);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,19 +93,32 @@ public class MapTrackerFragment extends AppCompatActivity implements OnMapReadyC
                 stopService(new Intent(MapTrackerFragment.this, GpsService.class));
             }
         });
+        IntentFilter intentFilter = new IntentFilter(BROADCAST_ACTION);
+        registerReceiver(broadcastReceiver, intentFilter);
     }
 
-    private class MyReceiver extends BroadcastReceiver{
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
-        @Override
-        public void onReceive(Context context, Intent intent) {
+    private void addPoint(double latitude, double longitude){
+        mMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude),15f));
+    }
 
+    private void addPoint(ArrayList<Double> latitudeList, ArrayList<Double> longitudeList){
+        for (int i = 0; i < longitudeList.size(); i++){
+            mMap.addMarker(new MarkerOptions().position(new LatLng(latitudeList.get(i), longitudeList.get(i))));
         }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitudeList.get(latitudeList.size() - 1), longitudeList.get(longitudeList.size() - 1)),15f));
+        Toast.makeText(this, "Added list of points", Toast.LENGTH_SHORT);
     }
 
-
-
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

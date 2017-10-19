@@ -11,9 +11,11 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import taras.mushroomer.Fragment.MapTrackerFragment;
 
 
 public class GpsService extends Service {
@@ -21,6 +23,9 @@ public class GpsService extends Service {
     private LocationManager mLocationManager = null;
     private static final int LOCATION_INTERVAL = 1000;
     private static final float LOCATION_DISTANCE = 10f;
+
+    private ArrayList<Location> backgroundLocationList;
+
 
     private class LocationListener implements android.location.LocationListener
     {
@@ -34,16 +39,25 @@ public class GpsService extends Service {
         @Override
         public void onLocationChanged(Location location){
             Log.e(TAG, "onLocationChanged: " + location);
-            Toast.makeText(getApplicationContext(), "Update location!", Toast.LENGTH_SHORT).show();
             mLastLocation.set(location);
-
             if (isActivityForeground()){
-                Intent intent = new Intent();
-                intent.setAction("SEND_DATA");
-                intent.putExtra(location);
+                Intent intent = new Intent(MapTrackerFragment.BROADCAST_ACTION);
+                if (backgroundLocationList != null){
+                    backgroundLocationList.add(mLastLocation);
+                    intent.putExtra("ServiceGpsLatitudeList", getDoubleItems(backgroundLocationList, "Latitude"));
+                    intent.putExtra("ServiceGpsLongitudeList", getDoubleItems(backgroundLocationList, "Longitude"));
+                    backgroundLocationList = null;
+                } else {
+                    intent.putExtra("ServiceGpsLatitude", mLastLocation.getLatitude());
+                    intent.putExtra("ServiceGpsLongitude", mLastLocation.getLongitude());
+                }
                 sendBroadcast(intent);
+            } else {
+                if (backgroundLocationList == null){
+                    backgroundLocationList = new ArrayList<>();
+                }
+                backgroundLocationList.add(mLastLocation);
             }
-
         }
 
         @Override
@@ -61,7 +75,22 @@ public class GpsService extends Service {
         {
             Log.e(TAG, "onStatusChanged: " + provider);
         }
+
+        private ArrayList<Double> getDoubleItems(ArrayList<Location> locationList, String type){
+            ArrayList<Double> doubleList = new ArrayList<>();
+            if (type.equals("Latitude")){
+                for (Location location: locationList){
+                    doubleList.add(location.getLatitude());
+                }
+            } else {
+                for (Location location: locationList){
+                    doubleList.add(location.getLongitude());
+                }
+            }
+            return doubleList;
+        }
     }
+
 
     LocationListener[] mLocationListeners = new LocationListener[] {
             new LocationListener(LocationManager.GPS_PROVIDER),
@@ -133,7 +162,8 @@ public class GpsService extends Service {
     public boolean isActivityForeground(){
         ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         List<ActivityManager.RunningTaskInfo> runningTaskInfos = manager.getRunningTasks(1);
-        ComponentName componentName = runningTaskInfos.get(0).topActivity;
-        return componentName.getPackageName().equals("taras.mushroomer.Fragment.MapTrackerFragment");
+        ComponentName componentInfo = runningTaskInfos.get(0).topActivity;
+        if (componentInfo.getClassName().equals("taras.mushroomer.Fragment.MapTrackerFragment")) return true;
+        else return false;
     }
 }

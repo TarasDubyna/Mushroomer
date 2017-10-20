@@ -1,28 +1,25 @@
 package taras.mushroomer.Fragment;
 
 import android.Manifest;
-import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -33,12 +30,21 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import taras.mushroomer.R;
 import taras.mushroomer.services.GpsService;
 
 public class MapTrackerFragment extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
+
+    FloatingActionButton btnStart;
+    FloatingActionButton btnStop;
+    FloatingActionButton btnClear;
+
+    TextView distanceTextView;
+
+    private ArrayList<LatLng> trackLocationList;
+    private float distance = 0;
+
 
     private GoogleMap mMap;
     private SupportMapFragment mapFragment;
@@ -53,17 +59,16 @@ public class MapTrackerFragment extends AppCompatActivity implements OnMapReadyC
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.hasExtra("ServiceGpsLongitudeList") && intent.hasExtra("ServiceGpsLatitudeList")){
-                ArrayList<Double> longitudeList = (ArrayList<Double>) intent.getSerializableExtra("ServiceGpsLongitudeList");
-                ArrayList<Double> latitudeList = (ArrayList<Double>) intent.getSerializableExtra("ServiceGpsLatitudeList");
-                addPoint(latitudeList, longitudeList);
-            } else {
-                double latitude = intent.getDoubleExtra("ServiceGpsLatitude", 0);
-                double longitude = intent.getDoubleExtra("ServiceGpsLongitude", 0);
-                addPoint(latitude, longitude);
-            }
+            ArrayList<Double> longitudeList = (ArrayList<Double>) intent.getSerializableExtra("ServiceGpsLongitudeList");
+            ArrayList<Double> latitudeList = (ArrayList<Double>) intent.getSerializableExtra("ServiceGpsLatitudeList");
+            addPoint(latitudeList, longitudeList);
         }
     };
+
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,23 +81,26 @@ public class MapTrackerFragment extends AppCompatActivity implements OnMapReadyC
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        FloatingActionButton fabStart = (FloatingActionButton) findViewById(R.id.map_fab_start);
-        FloatingActionButton fabPause = (FloatingActionButton) findViewById(R.id.map_fab_pause);
-        FloatingActionButton fabStop = (FloatingActionButton) findViewById(R.id.map_fab_stop);
+        btnStart = (FloatingActionButton) findViewById(R.id.map_fab_start);
+        btnStop = (FloatingActionButton) findViewById(R.id.map_fab_stop);
+        btnClear = (FloatingActionButton) findViewById(R.id.map_fab_clear);
 
-        fabStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startService(new Intent(MapTrackerFragment.this, GpsService.class));
-            }
-        });
-        fabPause.setOnClickListener(this);
+        distanceTextView = (TextView) findViewById(R.id.map_distance_text);
+
+        //startService(new Intent(MapTrackerFragment.this, GpsService.class));
+
+        btnStart.setOnClickListener(this);
+        btnStop.setOnClickListener(this);
+        btnClear.setOnClickListener(this);
+
+
+        /*
         fabStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 stopService(new Intent(MapTrackerFragment.this, GpsService.class));
             }
-        });
+        });*/
         IntentFilter intentFilter = new IntentFilter(BROADCAST_ACTION);
         registerReceiver(broadcastReceiver, intentFilter);
     }
@@ -102,21 +110,19 @@ public class MapTrackerFragment extends AppCompatActivity implements OnMapReadyC
         super.onResume();
     }
 
-    private void addPoint(double latitude, double longitude){
-        mMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitude, longitude),15f));
-    }
-
     private void addPoint(ArrayList<Double> latitudeList, ArrayList<Double> longitudeList){
         for (int i = 0; i < longitudeList.size(); i++){
-            mMap.addMarker(new MarkerOptions().position(new LatLng(latitudeList.get(i), longitudeList.get(i))));
+            mMap.addMarker(new MarkerOptions().position(new LatLng(latitudeList.get(i), longitudeList.get(i)))).setTitle("From stack position");
+            trackLocationList.add(new LatLng(latitudeList.get(i), longitudeList.get(i)));
+            calculateDistance(trackLocationList, distance);
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitudeList.get(latitudeList.size() - 1), longitudeList.get(longitudeList.size() - 1)),15f));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latitudeList.get(latitudeList.size() - 1), longitudeList.get(longitudeList.size() - 1)),20f));
         Toast.makeText(this, "Added list of points", Toast.LENGTH_SHORT);
     }
 
     @Override
     protected void onDestroy() {
+        Log.e("LoggingApp","MapTrackerFragment - destroyed");
         super.onDestroy();
     }
 
@@ -157,26 +163,37 @@ public class MapTrackerFragment extends AppCompatActivity implements OnMapReadyC
         }
     }
 
-
-
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.map_fab_start:
-                //mMap.addMarker(new MarkerOptions().position(getCurrentLocation()).title("Current"));
-                //LatLng location = getCurrentLocation();
-                //MarkerOptions markerOptions = new MarkerOptions().position(location).title("current position");
-                //mMap.addMarker(markerOptions);
-                //mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
-                recordLocation = true;
+                btnStart.setVisibility(View.GONE);
+                btnStart.setClickable(false);
+                btnStop.setVisibility(View.VISIBLE);
+                btnStop.setClickable(true);
+                btnClear.setClickable(false);
+                btnClear.setVisibility(View.GONE);
+                if (trackLocationList == null){
+                    trackLocationList = new ArrayList<>();
+                }
+                startService(new Intent(MapTrackerFragment.this, GpsService.class));
                 break;
-            case R.id.map_fab_pause:
-                recordLocation = false;
-                break;
-            case R.id.map_fab_stop:
 
-                Snackbar.make(view, "STOP", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+            case R.id.map_fab_stop:
+                btnStop.setVisibility(View.GONE);
+                btnStop.setClickable(false);
+                btnStart.setVisibility(View.VISIBLE);
+                btnStart.setClickable(true);
+                btnClear.setVisibility(View.VISIBLE);
+                btnClear.setClickable(true);
+                stopService(new Intent(MapTrackerFragment.this, GpsService.class));
+                break;
+
+            case R.id.map_fab_clear:
+                btnClear.setClickable(false);
+                btnClear.setVisibility(View.GONE);
+                trackLocationList = null;
+                distance = 0;
                 break;
         }
     }
@@ -235,6 +252,35 @@ public class MapTrackerFragment extends AppCompatActivity implements OnMapReadyC
         } else {
             return true;
         }
+    }
+
+    private void calculateDistance(ArrayList<LatLng> trackLocationList, float distanceIn){
+        if (trackLocationList.size() == 1){
+            distanceTextView.setText("");
+        } else {
+            double lat2 = trackLocationList.get(trackLocationList.size() - 1).latitude;
+            double lat1 = trackLocationList.get(trackLocationList.size() - 2).latitude;
+            double lng2 = trackLocationList.get(trackLocationList.size() - 1).longitude;
+            double lng1 = trackLocationList.get(trackLocationList.size() - 2).longitude;
+
+            double earthRadius = 6371000; //meters
+            double dLat = Math.toRadians(lat2-lat1);
+            double dLng = Math.toRadians(lng2-lng1);
+            double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                            Math.sin(dLng/2) * Math.sin(dLng/2);
+            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            distance = (float) (distanceIn + (earthRadius * c));
+            distanceTextView.setText(roundRate(distance) + "м");
+        }
+    }
+
+    private float roundRate(float number) {
+        int pow = 10;
+        for (int i = 1; i < 2; i++)
+            pow *= 10;
+        double tmp = number * pow;
+        return (float) (int) ((tmp - (int) tmp) >= 0.5 ? tmp + 1 : tmp) / pow;
     }
 
 

@@ -40,6 +40,18 @@ public class GpsService extends Service {
         public void onLocationChanged(Location location){
             Log.e(TAG, "onLocationChanged: " + location);
             mLastLocation.set(location);
+            if (backgroundLocationList == null){
+                backgroundLocationList = new ArrayList<>();
+            }
+            backgroundLocationList.add(mLastLocation);
+            if (isActivityForeground()){
+                Intent intent = new Intent(MapTrackerFragment.BROADCAST_ACTION);
+                intent.putExtra("ServiceGpsLatitudeList", getDoubleItems(backgroundLocationList, "Latitude"));
+                intent.putExtra("ServiceGpsLongitudeList", getDoubleItems(backgroundLocationList, "Longitude"));
+                backgroundLocationList = null;
+                sendBroadcast(intent);
+            }
+            /*
             if (isActivityForeground()){
                 Intent intent = new Intent(MapTrackerFragment.BROADCAST_ACTION);
                 if (backgroundLocationList != null){
@@ -57,7 +69,7 @@ public class GpsService extends Service {
                     backgroundLocationList = new ArrayList<>();
                 }
                 backgroundLocationList.add(mLastLocation);
-            }
+            }*/
         }
 
         @Override
@@ -71,8 +83,7 @@ public class GpsService extends Service {
         }
 
         @Override
-        public void onStatusChanged(String provider, int status, Bundle extras)
-        {
+        public void onStatusChanged(String provider, int status, Bundle extras){
             Log.e(TAG, "onStatusChanged: " + provider);
         }
 
@@ -106,15 +117,14 @@ public class GpsService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId)
     {
-        Log.e(TAG, "onStartCommand");
+        Log.e("LoggingApp", "onStartCommand");
         super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
 
     @Override
-    public void onCreate()
-    {
-        Log.e(TAG, "onCreate");
+    public void onCreate(){
+        Log.e("LoggingApp","GpsService - created");
         initializeLocationManager();
         try {
             mLocationManager.requestLocationUpdates(
@@ -137,9 +147,8 @@ public class GpsService extends Service {
     }
 
     @Override
-    public void onDestroy()
-    {
-        Log.e(TAG, "onDestroy");
+    public void onDestroy(){
+        Log.e("GpsService","GpsService - destroyed");
         super.onDestroy();
         if (mLocationManager != null) {
             for (int i = 0; i < mLocationListeners.length; i++) {

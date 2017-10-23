@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+    android:id="@+id/menu_tracker_reference"
+    android:title="@string/action_settings"
+    android:icon="@drawable/toolbar_reference_item"
+    app:showAsAction="always" />
+</menu>
+

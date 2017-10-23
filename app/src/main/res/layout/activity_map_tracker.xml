@@ -17,7 +17,7 @@
             android:id="@+id/toolbar_map"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="?attr/colorAccent"
             app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay">
         </android.support.v7.widget.Toolbar>
@@ -32,72 +32,43 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/appbar_map"
-        tools:context="taras.mushroomer.Fragment.MapTrackerFragment" />
+        tools:context="taras.mushroomer.MapTrackerActivity" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/map_fab_stop"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:visibility="gone"
+        android:src="@drawable/btn_stop"
         android:layout_alignParentBottom="true"
-        android:background="@color/brown"
-        android:elevation="@dimen/activity_horizontal_margin"
-        android:layout_alignParentStart="true">
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/map_fab_start"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_gravity="end|bottom"
-                android:layout_marginLeft="10dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp"
-                android:src="@drawable/btn_start"/>
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/map_fab_stop"
-                android:visibility="gone"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_gravity="end|bottom"
-                android:layout_marginLeft="10dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp"
-                android:src="@drawable/btn_stop"/>
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/map_fab_clear"
-                android:visibility="gone"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_gravity="end|bottom"
-                android:layout_marginLeft="80dp"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="10dp"
-                android:src="@drawable/btn_clear"/>
-        </RelativeLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textSize="22sp"
-                android:textColor="@color/white"
-                android:text="Дистанция: " />
-            <TextView
-                android:id="@+id/map_distance_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textSize="18sp"
-                android:textColor="@color/white"
-                android:text="2500м" />
-        </LinearLayout>
-    </LinearLayout>
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="15dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/map_fab_start"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:tag="start"
+        android:src="@drawable/btn_start"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="15dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/map_fab_clear"
+        android:visibility="gone"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:background="@color/white"
+        android:src="@drawable/btn_clear"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="80dp"
+        android:layout_marginBottom="15dp" />
+
+
 </RelativeLayout>
 
 

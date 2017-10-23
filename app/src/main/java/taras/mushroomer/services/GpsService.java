@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -15,7 +16,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import taras.mushroomer.Fragment.MapTrackerFragment;
+import taras.mushroomer.MapTrackerActivity;
 
 
 public class GpsService extends Service {
@@ -45,31 +46,12 @@ public class GpsService extends Service {
             }
             backgroundLocationList.add(mLastLocation);
             if (isActivityForeground()){
-                Intent intent = new Intent(MapTrackerFragment.BROADCAST_ACTION);
+                Intent intent = new Intent(MapTrackerActivity.BROADCAST_ACTION);
                 intent.putExtra("ServiceGpsLatitudeList", getDoubleItems(backgroundLocationList, "Latitude"));
                 intent.putExtra("ServiceGpsLongitudeList", getDoubleItems(backgroundLocationList, "Longitude"));
                 backgroundLocationList = null;
                 sendBroadcast(intent);
             }
-            /*
-            if (isActivityForeground()){
-                Intent intent = new Intent(MapTrackerFragment.BROADCAST_ACTION);
-                if (backgroundLocationList != null){
-                    backgroundLocationList.add(mLastLocation);
-                    intent.putExtra("ServiceGpsLatitudeList", getDoubleItems(backgroundLocationList, "Latitude"));
-                    intent.putExtra("ServiceGpsLongitudeList", getDoubleItems(backgroundLocationList, "Longitude"));
-                    backgroundLocationList = null;
-                } else {
-                    intent.putExtra("ServiceGpsLatitude", mLastLocation.getLatitude());
-                    intent.putExtra("ServiceGpsLongitude", mLastLocation.getLongitude());
-                }
-                sendBroadcast(intent);
-            } else {
-                if (backgroundLocationList == null){
-                    backgroundLocationList = new ArrayList<>();
-                }
-                backgroundLocationList.add(mLastLocation);
-            }*/
         }
 
         @Override
@@ -103,6 +85,7 @@ public class GpsService extends Service {
     }
 
 
+
     LocationListener[] mLocationListeners = new LocationListener[] {
             new LocationListener(LocationManager.GPS_PROVIDER),
             new LocationListener(LocationManager.NETWORK_PROVIDER)
@@ -128,15 +111,6 @@ public class GpsService extends Service {
         initializeLocationManager();
         try {
             mLocationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
-                    mLocationListeners[1]);
-        } catch (java.lang.SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
-        } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
-        }
-        try {
-            mLocationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
                     mLocationListeners[0]);
         } catch (java.lang.SecurityException ex) {
@@ -144,12 +118,22 @@ public class GpsService extends Service {
         } catch (IllegalArgumentException ex) {
             Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
+        try {
+            mLocationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    mLocationListeners[1]);
+        } catch (java.lang.SecurityException ex) {
+            Log.i(TAG, "fail to request location update, ignore", ex);
+        } catch (IllegalArgumentException ex) {
+            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
+        }
     }
 
     @Override
     public void onDestroy(){
         Log.e("GpsService","GpsService - destroyed");
         super.onDestroy();
+
         if (mLocationManager != null) {
             for (int i = 0; i < mLocationListeners.length; i++) {
                 try {
@@ -172,7 +156,7 @@ public class GpsService extends Service {
         ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         List<ActivityManager.RunningTaskInfo> runningTaskInfos = manager.getRunningTasks(1);
         ComponentName componentInfo = runningTaskInfos.get(0).topActivity;
-        if (componentInfo.getClassName().equals("taras.mushroomer.Fragment.MapTrackerFragment")) return true;
+        if (componentInfo.getClassName().equals("taras.mushroomer.MapTrackerActivity")) return true;
         else return false;
     }
 }

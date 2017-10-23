@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Mushroomer</string>
     <string name="action_settings">Settings</string>
+    <string name="reference">Справка</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="gps_tracker">GPS-трекер</string>
 
     <string name="edible">Съедобные</string>
     <string name="conditionally_edible">Условно-съедобные</string>
@@ -9,6 +11,13 @@
 
     <string name="title_activity_info_mushroom">InfoMushroomActivity</string>
     <string name="title_activity_mushroom_lists">MushroomListsActivity</string>
+    <string name="title_activity_map_tracker">Map</string>
+
+    <string name="distance">Дистанция: </string>
+    <string name="wait_location">Ожидание локации...</string>
+
+    <string name="marker_start_text">Начальная позиция</string>
+    <string name="marker_current_text">Текущая позиция</string>
 
 
     <string name="polsky_grib"> Польский гриб растет на кислых почвах в смешанных (часто под дубами,
@@ -49,8 +58,6 @@
         юности очень твердая, затем становится мягче. Споровый порошок оливково-коричневый,
         коричневато-зеленоватый или оливково-бурый.
     </string>
-
-
     <string name="dojdevik_syedobni">Обычно собственно дождевиком называют молодые плотные грибы, у
         которых ещё не образовалась порошковидная масса спор («пыль»). Также их называют: пчелиная
         губка, заячья картошка, а созревший гриб — порховка, пырховка, пылевик, дедушкин табак,
@@ -153,6 +160,7 @@
         смертельно ядовита. Признаки отравления появляются через 8—12, иногда через 20—40 ч после
         принятия пищи. Неопытные грибники могут спутать этот гриб с некоторыми из съедобных грибов.
     </string>
-    <string name="title_activity_map_tracker">Map</string>
+
+
 
 </resources>

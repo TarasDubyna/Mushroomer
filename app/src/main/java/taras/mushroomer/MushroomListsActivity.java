@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import taras.mushroomer.DB.DatabaseHelper;
-import taras.mushroomer.Fragment.MapTrackerFragment;
 import taras.mushroomer.Fragment.MushroomListFragment;
 import taras.mushroomer.Model.Mushroom;
 
@@ -45,22 +44,21 @@ public class MushroomListsActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
 
         viewPager = (ViewPager) findViewById(R.id.container);
         setupViewPager(viewPager);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+    }
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MushroomListsActivity.this, MapTrackerFragment.class);
-                startActivity(intent);
-                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-            }
-        });
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 
     static String[] typeNames = {"Съедобные", "Условно-съедобные", "Несъедобные"};

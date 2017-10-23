@@ -4,6 +4,7 @@
     <string name="reference">Справка</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="gps_tracker">GPS-трекер</string>
+    <string name="dialog_title">Список грибов</string>
 
     <string name="edible">Съедобные</string>
     <string name="conditionally_edible">Условно-съедобные</string>

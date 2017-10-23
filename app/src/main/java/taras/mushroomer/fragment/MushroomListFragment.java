@@ -1,4 +1,4 @@
-package taras.mushroomer.Fragment;
+package taras.mushroomer.fragment;
 
 
 import android.os.Bundle;
@@ -14,9 +14,9 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import taras.mushroomer.Adapter.RecyclerAdapter;
+import taras.mushroomer.adapter.RecyclerAdapter;
 import taras.mushroomer.DB.DatabaseHelper;
-import taras.mushroomer.Model.Mushroom;
+import taras.mushroomer.model.Mushroom;
 import taras.mushroomer.R;
 
 public class MushroomListFragment extends Fragment {
@@ -66,7 +66,7 @@ public class MushroomListFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         DatabaseHelper databaseHelper = new DatabaseHelper(getActivity());
-        ArrayList<Mushroom> mushrooms = databaseHelper.getAllMushroomsByType(type);
+        ArrayList<Mushroom> mushrooms = databaseHelper.getMushroomsByType(type);
         Log.e("MM", "GOT MASHROOMS " + Arrays.toString(mushrooms.toArray()));
         RecyclerAdapter adapter = new RecyclerAdapter(getActivity(), mushrooms);
 

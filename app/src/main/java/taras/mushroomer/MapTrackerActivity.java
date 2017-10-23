@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.location.Location;
+import android.os.Vibrator;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
@@ -22,6 +23,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,17 +44,25 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.List;
 
+import taras.mushroomer.DB.DatabaseHelper;
+import taras.mushroomer.dialog.DialogPutMushroom;
+import taras.mushroomer.model.Mushroom;
 import taras.mushroomer.services.GpsService;
 
-public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
+public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyCallback,
+        View.OnClickListener, GoogleMap.OnMarkerClickListener, DialogPutMushroom.GetMushroomItem, GoogleMap.OnMapLongClickListener {
 
     FloatingActionButton btnStart;
     FloatingActionButton btnStop;
     FloatingActionButton btnClear;
 
+    DialogPutMushroom dialogPutMushroom;
+
     Toolbar toolbar;
 
     private ArrayList<LatLng> trackLocationList;
+    private ArrayList<Marker> mMushroomMarkerList;
+    ArrayList<ArrayList<Mushroom>> mushroomList;
     private float distance = 0;
 
     private GoogleMap mMap;
@@ -107,7 +118,6 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
         btnStop = (FloatingActionButton) findViewById(R.id.map_fab_stop);
         btnClear = (FloatingActionButton) findViewById(R.id.map_fab_clear);
 
-
         btnStart.setOnClickListener(this);
         btnStop.setOnClickListener(this);
         btnClear.setOnClickListener(this);
@@ -137,8 +147,6 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
                         .title(getResources().getString(R.string.marker_current_text))
                         .icon(BitmapDescriptorFactory.fromBitmap(getMarkerIcon(R.drawable.marker_current)))
                         .position(trackLocationList.get(trackLocationList.size() - 1)));
-            } else {
-                mMap.addMarker(new MarkerOptions().position(trackLocationList.get(i)));
             }
             mTrackLine = mMap.addPolyline(new PolylineOptions().add(trackLocationList.get(i)));
 
@@ -180,6 +188,8 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setOnMapLongClickListener(this);
+        mMap.setOnMarkerClickListener(this);
         //mMap.setMinZoomPreference(6.0f);
         //mMap.setMaxZoomPreference(20.0f);
         // Add a marker in Sydney and move the camera
@@ -213,6 +223,10 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
                 break;
             case R.id.map_fab_clear:
                 btnClear.setVisibility(View.GONE);
+                mMap.clear();
+                mTrackLine = null;
+                mMarkerStart = null;
+                mMarkerCurrent = null;
                 trackLocationList = null;
                 distance = 0;
                 toolbarTextUpdate(getResources().getString(R.string.gps_tracker), "");
@@ -246,16 +260,6 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
     }
 
 
-    private boolean isPointInCircle(Circle circle, LatLng location) {
-        float[] distance = new float[2];
-        Location.distanceBetween(location.latitude, location.longitude,
-                circle.getCenter().latitude, circle.getCenter().longitude, distance);
-        if (distance[0] > circle.getRadius()) {
-            return false;
-        } else {
-            return true;
-        }
-    }
 
     private String calculateDistance(ArrayList<LatLng> trackLocationList, float distanceIn){
         if (trackLocationList.size() == 1){
@@ -287,4 +291,39 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
     }
 
 
+    private LatLng onClickPosition;
+
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        for (Marker marker1: mMushroomMarkerList){
+            if (marker1.equals(marker)){
+                Toast.makeText(this, "Click on mushroom marker", Toast.LENGTH_SHORT).show();
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void onFinishDialog(Mushroom mushroom) {
+        dialogPutMushroom.dismiss();
+        if (mMushroomMarkerList == null){
+            mMushroomMarkerList = new ArrayList<>();
+        }
+        Marker marker = mMap.addMarker(new MarkerOptions()
+                .title(mushroom.getName()).position(onClickPosition));
+        mMushroomMarkerList.add(marker);
+    }
+
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+        onClickPosition = latLng;
+        if (mushroomList == null){
+            DatabaseHelper databaseHelper = new DatabaseHelper(this);
+            mushroomList = new ArrayList<>(databaseHelper.getAllMushrooms());
+        }
+        dialogPutMushroom = DialogPutMushroom.newInstance("Добавить точку", mushroomList);
+        dialogPutMushroom.show(getFragmentManager(), "TakeMushroom");
+        ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(200);
+    }
 }

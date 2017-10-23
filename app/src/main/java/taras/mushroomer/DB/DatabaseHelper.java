@@ -9,9 +9,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -21,7 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import taras.mushroomer.Model.Mushroom;
+import taras.mushroomer.model.Mushroom;
 import taras.mushroomer.R;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -107,13 +104,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /*
-    private Bitmap getBitmapImageFromResource(int resource){
-        Drawable drawable = context.getResources().getDrawable(resource);
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), resource);
-
-    }*/
-
     private String getDescriptionFromResource(int resource){
         String text = context.getResources().getString(resource);
         return text;
@@ -144,20 +134,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    /*
-    public boolean addMushroom(Mushroom mushroom){
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COL_MUSHROOM_NAME, mushroom.getName());
-        cv.put(COL_MUSHROOM_TYPE, mushroom.getType());
-        mushroom.setImageDir(saveToInternalStorage(mushroom.getImage(), mushroom.getName()));
-        cv.put(COL_MUSHROOM_PHOTO_DIR, mushroom.getImageDir());
-        result = db.insertWithOnConflict(TABLE_MUSHROOM, null, cv, SQLiteDatabase.CONFLICT_IGNORE);
-        cv.clear();
-        if (result == -1) return false;
-        else return true;
-    }*/
-
     public boolean addListMushrooms(ArrayList<Mushroom> mushrooms){
         SQLiteDatabase db = this.getWritableDatabase();
         for (Mushroom mushroom: mushrooms){
@@ -172,7 +148,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         else return true;
     }
 
-    public ArrayList<Mushroom> getAllMushroomsInfoByType(String type){
+    public ArrayList<Mushroom> getMushroomsByType(String type){
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor res = db.rawQuery("select * from " + TABLE_MUSHROOM + " where "
                 + COL_MUSHROOM_TYPE + " =?;", new String[] {type});
@@ -193,21 +169,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return mushroomsList;
     }
 
-    public ArrayList<Mushroom> getAllMushroomsByType(String type){
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor res = db.rawQuery("select * from " + TABLE_MUSHROOM + " where "
-                + COL_MUSHROOM_TYPE + " =?;", new String[] {type});
-        ArrayList<Mushroom> mushroomsList = new ArrayList<>();
-        if (res.moveToFirst()){
-            while (!res.isAfterLast()){
-                Mushroom mushroom = new Mushroom();
-                mushroom.setId(res.getInt(0));
-                mushroom.setName(res.getString(1));
-                mushroom.setType(res.getString(3));
-                mushroom.setImageDir(res.getInt(5));
-                mushroomsList.add(mushroom);
-                res.moveToNext();
+
+    public ArrayList<ArrayList<Mushroom>> getAllMushrooms(){
+        String[] mushroomsTypes = {"Съедобные", "Условно-съедобные", "Несъедобные"};
+        ArrayList<ArrayList<Mushroom>> mushroomsList = new ArrayList<>();
+        for (int i = 0; i < mushroomsTypes.length; i++){
+            SQLiteDatabase db = this.getWritableDatabase();
+            Cursor res = db.rawQuery("select * from " + TABLE_MUSHROOM + " where "
+                    + COL_MUSHROOM_TYPE + " =?;", new String[] {mushroomsTypes[i]});
+            ArrayList<Mushroom> mushroomsListByType = new ArrayList<>();
+            if (res.moveToFirst()){
+                while (!res.isAfterLast()){
+                    Mushroom mushroom = new Mushroom();
+                    mushroom.setId(res.getInt(0));
+                    mushroom.setName(res.getString(1));
+                    mushroom.setType(res.getString(3));
+                    mushroom.setImageDir(res.getInt(5));
+                    mushroomsListByType.add(mushroom);
+                    res.moveToNext();
+                }
             }
+            mushroomsList.add(mushroomsListByType);
         }
         return mushroomsList;
     }

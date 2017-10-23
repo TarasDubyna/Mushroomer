@@ -1,10 +1,4 @@
-package taras.mushroomer.Model;
-
-import android.graphics.Bitmap;
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import java.io.Serializable;
+package taras.mushroomer.model;
 
 public class Mushroom{
     private int id;

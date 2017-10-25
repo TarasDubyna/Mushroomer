@@ -2,6 +2,7 @@ package taras.mushroomer;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +43,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import taras.mushroomer.DB.DatabaseHelper;
@@ -50,7 +52,7 @@ import taras.mushroomer.model.Mushroom;
 import taras.mushroomer.services.GpsService;
 
 public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyCallback,
-        View.OnClickListener, GoogleMap.OnMarkerClickListener, DialogPutMushroom.GetMushroomItem, GoogleMap.OnMapLongClickListener {
+        View.OnClickListener, GoogleMap.OnMarkerClickListener, DialogPutMushroom.GetMushroomItem, GoogleMap.OnMapLongClickListener, GoogleMap.OnCameraMoveListener {
 
     FloatingActionButton btnStart;
     FloatingActionButton btnStop;
@@ -63,11 +65,13 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
     private ArrayList<LatLng> trackLocationList;
     private ArrayList<Marker> mMushroomMarkerList;
     ArrayList<ArrayList<Mushroom>> mushroomList;
+
     private float distance = 0;
+    private float zoomParam = 17f;
 
     private GoogleMap mMap;
+    private LatLng onClickPosition;
     private SupportMapFragment mapFragment;
-
 
     private Marker mMarkerStart;
     private Marker mMarkerCurrent;
@@ -98,7 +102,25 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
 
     @Override
     public void onBackPressed() {
-        moveTaskToBack(true);
+        if (isServiceRunning()){
+            moveTaskToBack(true);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+
+    private boolean isServiceRunning(){
+        ActivityManager am = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> l = am.getRunningServices(50);
+        Iterator<ActivityManager.RunningServiceInfo> i = l.iterator();
+        while (i.hasNext()) {
+            ActivityManager.RunningServiceInfo runningServiceInfo = i.next();
+            if (runningServiceInfo.service.getClassName().equals("taras.mushroomer.services.GpsService")){
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -138,24 +160,26 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
                         .title(getResources().getString(R.string.marker_start_text))
                         .icon(BitmapDescriptorFactory.fromBitmap(getMarkerIcon(R.drawable.marker_start)))
                         .position(trackLocationList.get(0)));
-            } else if (trackLocationList.size() > 1 && i == trackLocationList.size() - 1){
-                if (mMarkerCurrent != null){
-                    mMap.addMarker(new MarkerOptions().position(mMarkerCurrent.getPosition()));
-                    mMarkerCurrent.remove();
-                }
-                mMarkerCurrent = mMap.addMarker(new MarkerOptions()
-                        .title(getResources().getString(R.string.marker_current_text))
-                        .icon(BitmapDescriptorFactory.fromBitmap(getMarkerIcon(R.drawable.marker_current)))
-                        .position(trackLocationList.get(trackLocationList.size() - 1)));
             }
             mTrackLine = mMap.addPolyline(new PolylineOptions().add(trackLocationList.get(i)));
-
-            if (getSupportActionBar().getTitle().equals(getResources().getString(R.string.distance))){
-                toolbarTextUpdate(getResources().getString(R.string.distance), null);
-            }
-            toolbarTextUpdate(null, calculateDistance(trackLocationList, distance));
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(trackLocationList.get(trackLocationList.size() - 1),17f));
+        if (mMarkerStart != null && !mMarkerStart.getPosition().equals(trackLocationList.get(trackLocationList.size() - 1))){
+            if (mMarkerCurrent != null){
+                mMarkerCurrent.remove();
+            }
+            mMarkerCurrent = mMap.addMarker(new MarkerOptions()
+                    .title(getResources().getString(R.string.marker_start_text))
+                    .position(trackLocationList.get(trackLocationList.size() - 1)));
+        }
+
+        calculateDistance(trackLocationList, distance);
+        if (distance != 0){
+            getActionBar().setSubtitle(getResources().getString(R.string.distance) + roundRate(distance) + "м");
+        } else {
+            toolbarTextUpdate(null, "");
+        }
+        Toast.makeText(this, "Distance: " + distance, Toast.LENGTH_SHORT).show();
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(trackLocationList.get(trackLocationList.size() - 1), zoomParam));
     }
 
     @Override
@@ -190,12 +214,7 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
         mMap = googleMap;
         mMap.setOnMapLongClickListener(this);
         mMap.setOnMarkerClickListener(this);
-        //mMap.setMinZoomPreference(6.0f);
-        //mMap.setMaxZoomPreference(20.0f);
-        // Add a marker in Sydney and move the camera
-        //LatLng sydney = getCurrentLocation();
-        //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.setOnCameraMoveListener(this);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             return;
@@ -259,11 +278,8 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
         return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), iconId), 80, 80, false);
     }
 
-
-
-    private String calculateDistance(ArrayList<LatLng> trackLocationList, float distanceIn){
+    private void calculateDistance(ArrayList<LatLng> trackLocationList, float distanceIn){
         if (trackLocationList.size() == 1){
-            return "";
         } else {
             double lat2 = trackLocationList.get(trackLocationList.size() - 1).latitude;
             double lat1 = trackLocationList.get(trackLocationList.size() - 2).latitude;
@@ -278,7 +294,6 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
                             Math.sin(dLng/2) * Math.sin(dLng/2);
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             distance = (float) (distanceIn + (earthRadius * c));
-            return String.valueOf(roundRate(distance) + "м");
         }
     }
 
@@ -291,7 +306,7 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
     }
 
 
-    private LatLng onClickPosition;
+
 
 
     @Override
@@ -325,5 +340,12 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
         dialogPutMushroom = DialogPutMushroom.newInstance("Добавить точку", mushroomList);
         dialogPutMushroom.show(getFragmentManager(), "TakeMushroom");
         ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(200);
+    }
+
+    @Override
+    public void onCameraMove() {
+        if (mMarkerStart != null){
+            zoomParam = mMap.getCameraPosition().zoom;
+        }
     }
 }

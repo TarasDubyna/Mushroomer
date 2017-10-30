@@ -52,7 +52,7 @@ import taras.mushroomer.model.Mushroom;
 import taras.mushroomer.services.GpsService;
 
 public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyCallback,
-        View.OnClickListener, GoogleMap.OnMarkerClickListener, DialogPutMushroom.GetMushroomItem, GoogleMap.OnMapLongClickListener, GoogleMap.OnCameraMoveListener {
+        View.OnClickListener, GoogleMap.OnMarkerClickListener, DialogPutMushroom.GetMushroomItem, GoogleMap.OnMapLongClickListener, GoogleMap.OnCameraMoveListener{
 
     FloatingActionButton btnStart;
     FloatingActionButton btnStop;
@@ -87,6 +87,9 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
             ArrayList<LatLng> trackList = new ArrayList<>();
             for (int i = 0; i < longitudeList.size(); i++){
                 trackList.add(new LatLng(latitudeList.get(i), longitudeList.get(i)));
+            }
+            if (trackLocationList == null){
+                trackLocationList = new ArrayList<>();
             }
             trackLocationList.addAll(trackList);
             if (trackLocationList.size() > 1){
@@ -153,33 +156,32 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
         super.onResume();
     }
 
-    private void addPoint(ArrayList<LatLng> trackLocationList){
-        for (int i = 0; i < trackLocationList.size(); i++){
+    private void addPoint(ArrayList<LatLng> locationList){
+        for (int i = 0; i < locationList.size(); i++){
+            calculateDistance();
             if (mMarkerStart == null ){
                 mMarkerStart = mMap.addMarker(new MarkerOptions()
                         .title(getResources().getString(R.string.marker_start_text))
                         .icon(BitmapDescriptorFactory.fromBitmap(getMarkerIcon(R.drawable.marker_start)))
-                        .position(trackLocationList.get(0)));
+                        .position(locationList.get(0)));
+                getSupportActionBar().setSubtitle("");
             }
-            mTrackLine = mMap.addPolyline(new PolylineOptions().add(trackLocationList.get(i)));
+            mTrackLine = mMap.addPolyline(new PolylineOptions().add(locationList.get(i)));
         }
-        if (mMarkerStart != null && !mMarkerStart.getPosition().equals(trackLocationList.get(trackLocationList.size() - 1))){
+        if (mMarkerStart != null && !mMarkerStart.getPosition().equals(locationList.get(locationList.size() - 1))){
             if (mMarkerCurrent != null){
                 mMarkerCurrent.remove();
             }
             mMarkerCurrent = mMap.addMarker(new MarkerOptions()
                     .title(getResources().getString(R.string.marker_start_text))
-                    .position(trackLocationList.get(trackLocationList.size() - 1)));
+                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerIcon(R.drawable.marker_current)))
+                    .position(locationList.get(locationList.size() - 1)));
         }
 
-        calculateDistance(trackLocationList, distance);
-        if (distance != 0){
-            getActionBar().setSubtitle(getResources().getString(R.string.distance) + roundRate(distance) + "м");
-        } else {
-            toolbarTextUpdate(null, "");
-        }
+
+
         Toast.makeText(this, "Distance: " + distance, Toast.LENGTH_SHORT).show();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(trackLocationList.get(trackLocationList.size() - 1), zoomParam));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(locationList.get(locationList.size() - 1), zoomParam));
     }
 
     @Override
@@ -215,6 +217,7 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
         mMap.setOnMapLongClickListener(this);
         mMap.setOnMarkerClickListener(this);
         mMap.setOnCameraMoveListener(this);
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             return;
@@ -278,7 +281,7 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
         return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), iconId), 80, 80, false);
     }
 
-    private void calculateDistance(ArrayList<LatLng> trackLocationList, float distanceIn){
+    private void calculateDistance(){
         if (trackLocationList.size() == 1){
         } else {
             double lat2 = trackLocationList.get(trackLocationList.size() - 1).latitude;
@@ -293,7 +296,13 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
                     Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
                             Math.sin(dLng/2) * Math.sin(dLng/2);
             double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            distance = (float) (distanceIn + (earthRadius * c));
+            distance = (float) (distance + (earthRadius * c));
+            if (distance == 0){
+                getActionBar().setSubtitle("");
+            } else {
+                getActionBar().setSubtitle(getResources().getString(R.string.distance) + roundRate(distance) + "м");
+            }
+
         }
     }
 
@@ -304,10 +313,6 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
         double tmp = number * pow;
         return (float) (int) ((tmp - (int) tmp) >= 0.5 ? tmp + 1 : tmp) / pow;
     }
-
-
-
-
 
     @Override
     public boolean onMarkerClick(Marker marker) {
@@ -326,6 +331,7 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
             mMushroomMarkerList = new ArrayList<>();
         }
         Marker marker = mMap.addMarker(new MarkerOptions()
+                .draggable(true)
                 .title(mushroom.getName()).position(onClickPosition));
         mMushroomMarkerList.add(marker);
     }
@@ -342,10 +348,17 @@ public class MapTrackerActivity extends AppCompatActivity implements OnMapReadyC
         ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(200);
     }
 
+
+
     @Override
     public void onCameraMove() {
         if (mMarkerStart != null){
             zoomParam = mMap.getCameraPosition().zoom;
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

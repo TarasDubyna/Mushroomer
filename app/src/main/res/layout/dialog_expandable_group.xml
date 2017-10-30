@@ -2,17 +2,25 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/list_group_layout"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/brown_light">
+    <ImageView
+        android:id="@+id/list_group_image"
+        android:layout_margin="3dp"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/gruzd_nastoyashy"/>
     <TextView
         android:layout_gravity="center_horizontal"
         android:padding="5dp"
         android:id="@+id/list_group_text"
         android:text="Съедобные"
         android:textSize="22sp"
+        android:gravity="center_vertical"
         android:textColor="@color/white"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent"/>
 </LinearLayout>

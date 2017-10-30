@@ -169,7 +169,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return mushroomsList;
     }
 
-
     public ArrayList<ArrayList<Mushroom>> getAllMushrooms(){
         String[] mushroomsTypes = {"Съедобные", "Условно-съедобные", "Несъедобные"};
         ArrayList<ArrayList<Mushroom>> mushroomsList = new ArrayList<>();
@@ -192,6 +191,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             mushroomsList.add(mushroomsListByType);
         }
         return mushroomsList;
+    }
+
+    public int getMushroomImageDir(String name){
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor res = db.rawQuery("select * from " + TABLE_MUSHROOM + " where "
+                + COL_MUSHROOM_NAME + " =?;", new String[] {name});
+        if (res.moveToFirst()){
+            while (!res.isAfterLast()){
+                return res.getInt(5);
+            }
+        }
+        return 0;
     }
 
 

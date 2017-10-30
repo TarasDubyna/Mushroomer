@@ -14,26 +14,23 @@ import java.util.ArrayList;
 
 import taras.mushroomer.R;
 import taras.mushroomer.adapter.ExpandableListViewAdapter;
+import taras.mushroomer.interfaces.GetMushroomItem;
+import taras.mushroomer.model.MarkerMushroomPair;
 import taras.mushroomer.model.Mushroom;
 
 public class DialogPutMushroom extends DialogFragment {
 
     public ExpandableListView mExpandableListView;
     private static ArrayList<ArrayList<Mushroom>> mMushroomList;
+    private static MarkerMushroomPair mMarkerMushroomPair;
 
     public DialogPutMushroom() {
     }
 
-    public interface GetMushroomItem{
-        void onFinishDialog(Mushroom mushroom);
-    }
-
-    public static DialogPutMushroom newInstance(String title, ArrayList<ArrayList<Mushroom>> list){
+    public static DialogPutMushroom newInstance(ArrayList<ArrayList<Mushroom>> list, MarkerMushroomPair markerMushroomPair){
+        mMarkerMushroomPair = markerMushroomPair;
         mMushroomList = list;
         DialogPutMushroom dialogFragment = new DialogPutMushroom();
-        Bundle args = new Bundle();
-        args.putString("title", title);
-        dialogFragment.setArguments(args);
         return dialogFragment;
 
     }
@@ -57,7 +54,15 @@ public class DialogPutMushroom extends DialogFragment {
             @Override
             public boolean onChildClick(ExpandableListView expandableListView, View view, int i, int i1, long l) {
                 GetMushroomItem getMushroomItem = (GetMushroomItem)getActivity();
-                getMushroomItem.onFinishDialog(mMushroomList.get(i).get((int) l));
+                if (mMarkerMushroomPair == null){
+                    MarkerMushroomPair markerMushroomPair = new MarkerMushroomPair();
+                    markerMushroomPair.setMushroom(mMushroomList.get(i).get((int) l));
+                    getMushroomItem.returnMushroom(markerMushroomPair, getDialog());
+                } else {
+                    mMarkerMushroomPair.setMushroom((mMushroomList.get(i).get((int) l)));
+                    getMushroomItem.returnMushroom(mMarkerMushroomPair, getDialog());
+                }
+
                 return false;
             }
         });
@@ -65,7 +70,9 @@ public class DialogPutMushroom extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 GetMushroomItem getMushroomItem = (GetMushroomItem)getActivity();
-                getMushroomItem.onFinishDialog(mMushroomList.get(i).get((int) l));
+                MarkerMushroomPair markerMushroomPair = new MarkerMushroomPair();
+                markerMushroomPair.setMushroom(mMushroomList.get(i).get((int) l));
+                getMushroomItem.returnMushroom(markerMushroomPair, getDialog());
             }
         });
     }
